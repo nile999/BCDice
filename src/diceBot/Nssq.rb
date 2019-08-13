@@ -1,4 +1,4 @@
-#--*-coding:utf-8-*--
+﻿#--*-coding:utf-8-*--
 
 class Nssq < DiceBot
   
@@ -22,7 +22,7 @@ class Nssq < DiceBot
   
   def prefixs
     #ダイスボットで使用するコマンドを配列で列挙すること。
-    ['\d+SQ([\+\-\d]*)','\d+DR(C)?(\+)?\d+','(T|S|G)C.*','\d+HR']
+    ['\d+SQ([\+\-\d]*)','\d+DR(C)?(\+)?\d+','(T|S|G)C.*','\d+HR\d*']
   end
   
   def gameName
@@ -43,8 +43,9 @@ class Nssq < DiceBot
   x: xに振るダイス数を入力。
   y: yに耐性を入力。
   例) 5DR3 5DRC4 5DRC+4
-・回復ロール(xHR)
+・回復ロール(xHR±y)
 　xD6の回復ロール。クリティカルが発生しません。
+  ±y: yに修正値を入力。±の計算に対応。省略可能。
 　x: xに振るダイス数を入力。
 　例) 2HR 10HR
 ・採取ロール(TC±z,SC±z,GC±z)
@@ -158,16 +159,17 @@ MESSAGETEXT
   def getHealRollDiceCommandResult(command)
 
     #回復ロール
-    return nil unless(/(\d+)HR/i === command)
+    return nil unless(/(\d+)HR(\d*)/i === command)
 
     diceCount = $1.to_i
+    resist = $2.to_i
 
     #ダイスロール
     _dice, dice_str, = roll(diceCount, 6)
     diceList = dice_str.split(/,/).collect{|i|i.to_i}.sort
 
     #出力文の生成
-    result = "(#{command}) ＞ [#{dice_str}] ＞ " + damageCheck(diceList, 3).to_s + "回復"
+    result = "(#{command}) ＞ [#{dice_str}]#{resist} ＞ " + damageCheck(diceList, resist).to_s + "回復"
 
     return result
 
